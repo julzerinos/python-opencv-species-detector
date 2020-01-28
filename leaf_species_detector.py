@@ -3,13 +3,12 @@ import sys
 
 import cv2 as cv
 import numpy as np
-import pandas as pd
 
 from sklearn.preprocessing import StandardScaler
 
 from sklearn.model_selection import train_test_split
 from skimage import feature
-from sklearn.svm import LinearSVC, SVC
+from sklearn.svm import SVC
 from sklearn.metrics import classification_report
 
 import mahotas as mt
@@ -17,9 +16,9 @@ import mahotas as mt
 
 plant_species = {
     0: 'circinatum',
-    1: 'garryana', 
-    2: 'glabrum', 
-    3: 'kelloggii', 
+    1: 'garryana',
+    2: 'glabrum',
+    3: 'kelloggii',
     4: 'macrophyllum',
     5: 'negundo'
 }
@@ -93,34 +92,36 @@ def fv_haralick(image_path, **kwargs):
 
     textures = mt.features.haralick(image)
     return textures.mean(axis=0)
-    
+
 
 def fv_image_statistics(image_path, **kwargs):
-    # Source https://github.com/AayushG159/Plant-Leaf-Identification/blob/master/Flavia%20py%20files/classify_leaves_flavia.ipynb
-    
+    # Source https://github.com/AayushG159/Plant-Leaf-Identification/blob/master/Flavia%20py%20files/classify_leaves_flavia.ipynb  # noqa
+
     image = cv.imread(image_path)
     gs = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
-    #Preprocessing
-    blur = cv.GaussianBlur(gs, (25,25),0)
-    ret_otsu,im_bw_otsu = cv.threshold(blur,0,255,cv.THRESH_BINARY_INV+cv.THRESH_OTSU)
-    kernel = np.ones((50,50),np.uint8)
+    # Preprocessing
+    blur = cv.GaussianBlur(gs, (25, 25), 0)
+    ret_otsu, im_bw_otsu = cv.threshold(
+        blur, 0, 255, cv.THRESH_BINARY_INV+cv.THRESH_OTSU)
+    kernel = np.ones((50, 50), np.uint8)
     closing = cv.morphologyEx(im_bw_otsu, cv.MORPH_CLOSE, kernel)
 
-    #Shape features
-    contours, _ = cv.findContours(closing,cv.RETR_TREE,cv.CHAIN_APPROX_SIMPLE)
+    # Shape features
+    contours, _ = cv.findContours(
+        closing, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     cnt = contours[0]
-    M = cv.moments(cnt)
+    _ = cv.moments(cnt)
     area = cv.contourArea(cnt)
-    perimeter = cv.arcLength(cnt,True)
-    x,y,w,h = cv.boundingRect(cnt)
+    perimeter = cv.arcLength(cnt, True)
+    x, y, w, h = cv.boundingRect(cnt)
     aspect_ratio = float(w)/h
     rectangularity = w*h/area
     circularity = ((perimeter)**2)/area
 
-    #Color features
-    red_channel = image[:,:,2]
-    green_channel = image[:,:,1]
-    blue_channel = image[:,:,0]
+    # Color features
+    red_channel = image[:, :, 2]
+    green_channel = image[:, :, 1]
+    blue_channel = image[:, :, 0]
     blue_channel[blue_channel == 255] = 0
     green_channel[green_channel == 255] = 0
     red_channel[red_channel == 255] = 0
@@ -141,9 +142,18 @@ def fv_image_statistics(image_path, **kwargs):
     inverse_diff_moments = ht_mean[4]
     entropy = ht_mean[8]
 
-    vector = [area,perimeter,w,h,aspect_ratio,rectangularity,circularity,\
-              red_mean,green_mean,blue_mean,red_std,green_std,blue_std,\
-              contrast,correlation,inverse_diff_moments,entropy
+    vector = [
+        area,
+        perimeter,
+        w, h,
+        aspect_ratio,
+        rectangularity,
+        circularity,
+        red_mean,
+        green_mean, blue_mean, red_std,
+        green_std, blue_std,
+        contrast, correlation,
+        inverse_diff_moments, entropy
              ]
 
     return vector
@@ -207,15 +217,18 @@ if __name__ == '__main__':
     fv_train = sc_X.fit_transform(fv_train)
     fv_test = sc_X.transform(fv_test)
 
-    model = SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
-  decision_function_shape=None, degree=3, gamma='auto', kernel='rbf',
-  max_iter=-1, probability=False, random_state=None, shrinking=True,
-  tol=0.001, verbose=False)
+    model = SVC(
+        C=1.0, cache_size=200, class_weight=None, coef0=0.0,
+        decision_function_shape=None, degree=3, gamma='auto',
+        kernel='rbf',
+        max_iter=-1, probability=False, random_state=None,
+        shrinking=True,
+        tol=0.001, verbose=False)
 
     model.fit(fv_train, lab_train)
     score = model.score(fv_test, lab_test)
 
-    print(f'Methods used in the model: {[features_methods[f].__name__ for f in fvs]}')
+    print(f'Methods in model: {[features_methods[f].__name__ for f in fvs]}')
     print(f'Total accuracy of the model: {score}')
     print(classification_report(
         model.predict(fv_test),
