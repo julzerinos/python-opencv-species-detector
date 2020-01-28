@@ -200,7 +200,7 @@ if __name__ == '__main__':
 
     fv_train, fv_test, lab_train, lab_test = train_test_split(
         training['fv'], training['lab'],
-        train_size=0.8, random_state=0
+        train_size=0.8, random_state=None
         )
 
     sc_X = StandardScaler()
