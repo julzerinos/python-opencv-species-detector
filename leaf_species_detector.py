@@ -35,7 +35,7 @@ def get_image_paths(parent_images_path='isolated'):
 
 
 def fv_kaze(image_path, **kwargs):
-    # Source https://medium.com/machine-learning-world/feature-extraction-and-similar-image-search-with-opencv-for-newbies-3c59796bf774
+    # Source https://medium.com/machine-learning-world/feature-extraction-and-similar-image-search-with-opencv-for-newbies-3c59796bf774  # noqa
     image = cv.imread(image_path)
     image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
 
@@ -52,7 +52,7 @@ def fv_kaze(image_path, **kwargs):
 
 
 def fv_histogram(image_path, **kwargs):
-    # Source https://www.pyimagesearch.com/2015/12/07/local-binary-patterns-with-python-opencv/
+    # Source https://www.pyimagesearch.com/2015/12/07/local-binary-patterns-with-python-opencv/  # noqa
     image = cv.imread(image_path)
     image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
 
@@ -64,13 +64,14 @@ def fv_histogram(image_path, **kwargs):
 
 
 def fv_local_binary_pattern(image_path, **kwargs):
-    # Source https://www.pyimagesearch.com/2015/12/07/local-binary-patterns-with-python-opencv/
-    
+    # Source https://www.pyimagesearch.com/2015/12/07/local-binary-patterns-with-python-opencv/  # noqa
+
     image = cv.imread(image_path)
     image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
 
     lbp = feature.local_binary_pattern(
-        image, kwargs['hist_numpoints'], kwargs['hist_radius'], method="uniform"
+        image, kwargs['hist_numpoints'],
+        kwargs['hist_radius'], method="uniform"
         )
     (hist, _) = np.histogram(
         lbp.ravel(),
@@ -134,7 +135,7 @@ def fv_image_statistics(image_path, **kwargs):
     green_std = np.std(green_channel)
     blue_std = np.std(blue_channel)
 
-    #Texture features
+    # Texture features
     textures = mt.features.haralick(gs)
     ht_mean = textures.mean(axis=0)
     contrast = ht_mean[1]
